@@ -19,6 +19,7 @@ typedef struct{
 } his_vendm;
 
 //增添输入历史，用于实现回退操作
+//实现方式是将整个售货机的状态储存起来，通过调用上一次操作之前售货机的状态来实现撤回操作
 void add_history(his_vendm vendm[3],Aisles vend[5],int state,int price);
 
 //检测输入格式是否合理，不同的状态有不同的检测原理
@@ -38,9 +39,9 @@ int main(){
     }
     
     int total_price=0;//该变量用于计算价格总量
-    int state=1;
+    int state=1;//状态变量
     while(1){
-        
+        //读取售货机状态
         fseek(ptr,0,SEEK_SET);
         fread(vend,sizeof(Aisles),5,ptr);
 
@@ -54,11 +55,11 @@ int main(){
         switch (state)
         {
             case 1:
-            printf("****摆货模式(输入END进入购买模式)****\n摆货时输入货物种类 货道 单价 数目\n请输入：");
+            printf("****摆货模式(输入END进入购买模式)****\n摆货时输入货物种类 货道 单价 数目(空格分隔)\n请输入：");
             break;
         
             case 2:
-            printf("****购买模式：选择货物(输入END开始购买)****\n输入货物种类 货道 数目\n");
+            printf("****购买模式：选择货物(输入END开始购买)****\n输入货物种类 货道 数目(空格分隔)\n");
             printf("请输入：");
             break;
             
@@ -86,7 +87,7 @@ int main(){
         }
         char pro_inp[10][10]={{0}};
         char * word=(char *)malloc(4);
-        word=strtok(input," ");
+        word=strtok(input," ");//以空格为标志把输入分隔开
         for (int i=0;
             word!=NULL;
             word=strtok(NULL," "))
@@ -107,6 +108,7 @@ int main(){
             continue;
         }
 
+        //如果输入的是back，则进行撤回操作
         if(strcmp("BACK",pro_inp[0])==0){
             if(pro_inp[1][0]==0){
                 if(hvend[0].state==0){
@@ -132,10 +134,10 @@ int main(){
             }
             continue;
         }
-        //
+        
         else{
             switch(state){
-                case 1://摆放货物状态
+                case 1://摆放货物模式
                 if(test_input(pro_inp,state)==1){
                     int aisles=atoi(pro_inp[1]),price=atoi(pro_inp[2]),number=atoi(pro_inp[3]);
                     //以下几个if都是检测输入内容是否合理
@@ -154,7 +156,7 @@ int main(){
                         while(getchar()!='\n');
                     }
 
-                    //通过检测后，将更改写入文件
+                    //通过检测后，将更改写入文件，并存储更改之前售货机的状态
                     add_history(hvend,vend,state,total_price);
                     vend[aisles-1].category=pro_inp[0][0];
                     vend[aisles-1].number+=number;
@@ -186,7 +188,7 @@ int main(){
                         while(getchar()!='\n');
                     }
 
-                    //检测无误后，计入总价，并将更改写入文件
+                    //检测无误后，计入总价，并将更改写入文件，并存储更改之前售货机的状态
                     add_history(hvend,vend,state,total_price);
                     total_price+=number*vend[aisles-1].price;
                     vend[aisles-1].number-=number;
