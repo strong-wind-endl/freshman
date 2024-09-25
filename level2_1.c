@@ -58,8 +58,7 @@ int main(){
             break;
 
             case 4:
-            fclose(ptr);
-            return 0;
+            state--;
 
             default:
             printf("未知错误\n");
@@ -169,6 +168,8 @@ int main(){
                     printf("找零%d元\n按回车键退出程序",0-total_price);
                     while(getchar()!='\n');
                 }
+                else
+                    continue;
                 break;
             }
         }
